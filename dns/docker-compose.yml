@@ -1,0 +1,24 @@
+version: "3"
+services:
+  dnsmasq:
+    image: "andyshinn/dnsmasq:latest"
+    volumes:
+      - ./dnsmasq.conf:/etc/dnsmasq.conf
+      - ./hosts:/etc/hosts
+      - ./tftpboot:/var/lib/tftpboot
+    networks:
+      ipvlan:
+        ipv4_address: 192.168.0.200
+    cap_add:
+      - NET_ADMIN
+    restart: always
+
+networks:
+  ipvlan:
+    driver: ipvlan
+    driver_opts:
+      ipvlan_mode: l3
+      parent: eth0
+      subnet: 192.168.0.0/24
+      gateway: 192.168.0.1
+      ipv4_address_range: 192.168.0.200/29
