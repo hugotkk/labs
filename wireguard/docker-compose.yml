@@ -1,0 +1,39 @@
+services:
+
+  client:
+    privileged: true
+    cap_add:
+    - NET_ADMIN
+    image: alpine
+    tty: true
+    networks:
+    - internet
+
+  server:
+    privileged: true
+    cap_add:
+    - NET_ADMIN
+    image: alpine
+    tty: true
+    networks:
+    - hugo_home
+    - internet
+
+  httpd:
+    image: httpd
+    networks:
+    - hugo_home
+
+  nginx:
+    image: nginx
+    networks:
+    - hugo_home
+
+  httpbin:
+    image: kennethreitz/httpbin
+    networks:
+    - hugo_home
+
+networks:
+  hugo_home:
+  internet:
