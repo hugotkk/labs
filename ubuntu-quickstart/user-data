@@ -1,0 +1,92 @@
+#cloud-config
+autoinstall:
+  version: 1
+  locale: en_US.UTF-8
+  keyboard:
+    layout: us
+  identity:
+    hostname: lab102.hhuge9.com
+    username: ubuntu
+    password: $6$p7uqsUVMtyFR1IU/$5CXxXnuhC8bEoWjmLyJS7i9DVXyREAl7UVaUXqPY4BsuwWE6S6EAwbvli3HMMSsyA.7BfXObTMMo5tV6Sx.kz1
+  storage:
+    config:
+      - id: disk0
+        type: disk
+        path: /dev/sda
+        wipe: superblock
+        ptable: gpt
+        grub_device: true
+      - id: disk0-1
+        type: partition
+        size: 1048576
+        device: disk0
+        flag: bios_grub
+        grub_device: false
+      - id: disk0-2
+        type: partition
+        size: 28G
+        device: disk0
+      - id: vg
+        type: lvm_volgroup
+        name: vg0
+        devices:
+          - disk0-2
+
+      - id: lv-root
+        type: lvm_partition
+        name: root
+        volgroup: vg
+        size: 10G
+      - id: root-fs
+        type: format
+        fstype: ext4
+        volume: lv-root
+      - id: mount-root
+        type: mount
+        path: /
+        device: root-fs
+
+      - id: lv-var
+        type: lvm_partition
+        name: var
+        volgroup: vg
+        size: 10G
+      - id: var-fs
+        type: format
+        fstype: ext4
+        volume: lv-var
+      - id: mount-var
+        type: mount
+        path: /var
+        device: var-fs
+
+      - id: lv-tmp
+        type: lvm_partition
+        name: tmp
+        volgroup: vg
+        size: 1G
+      - id: tmp-fs
+        type: format
+        fstype: ext4
+        volume: lv-tmp
+      - id: mount-tmp
+        type: mount
+        path: /tmp
+        device: tmp-fs
+  network:
+    version: 2
+    ethernets:
+      enp0s3:
+        dhcp4: no
+        addresses: [192.168.0.202/24]
+        gateway4: 192.168.0.1
+        nameservers:
+          addresses: [8.8.8.8]
+  packages:
+  - apache2
+  - wget
+  late-commands:
+  - curtin in-target --target=/target -- sh -c 'curl -sfL https://get.k3s.io | sh -'
+  - curtin in-target --target=/target -- sh -c 'echo "hello world" > /root/hello.txt'
+  - curtin in-target --target=/target -- wget -O /root/google https://google.com
+

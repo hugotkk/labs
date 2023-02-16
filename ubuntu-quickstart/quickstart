@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ "$#" -ne 4 ]; then
+    echo "Usage: $0 <vm_name> <seed_iso_path> <ubuntu_iso_path> <vdi_path>"
+    exit 1
+fi
+
+VM_NAME="$1"
+SEED_ISO_PATH="$2"
+UBUNTU_ISO_PATH="$3"
+VDI_PATH="$4"
+
+docker run --rm -v ${PWD}:/app cloud-init cloud-localds "$SEED_ISO_PATH" user-data meta-data
+VBoxManage controlvm "$VM_NAME" poweroff
+VBoxManage storageattach "$VM_NAME" --storagectl "SATA" --port 0 --device 0 --type hdd --medium none
+VBoxManage closemedium disk "$VDI_PATH" --delete
+VBoxManage createmedium disk --filename "$VDI_PATH" --size 30720
+VBoxManage storageattach "$VM_NAME" --storagectl "SATA" --port 0 --device 0 --type hdd --medium "$VDI_PATH"
+VBoxManage storageattach "$VM_NAME" --storagectl "IDE" --port 0 --device 0 --type dvddrive --medium "$UBUNTU_ISO_PATH"
+VBoxManage storageattach "$VM_NAME" --storagectl "IDE" --port 0 --device 1 --type dvddrive --medium "$SEED_ISO_PATH"
+VBoxManage startvm "$VM_NAME"
