@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+kextload -b org.virtualbox.kext.VBoxDrv;
+kextload -b org.virtualbox.kext.VBoxNetFlt;
+kextload -b org.virtualbox.kext.VBoxNetAdp;
+kextload -b org.virtualbox.kext.VBoxUSB;
+
+ip addr del 192.168.56.0 dev vboxnet0
+ip addr add 192.168.0.1 dev vboxnet0
+
+sysctl -w net.inet.ip.forwarding=1
